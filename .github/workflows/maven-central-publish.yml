@@ -13,36 +13,37 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          server-id: central
-          server-username: MAVEN_CENTRAL_USERNAME
-          server-password: MAVEN_CENTRAL_PASSWORD
-          # to prevent "no default secret key: No secret key"
-          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: GPG_PASSPHRASE
+#      - name: Set up Maven Central Repository
+#        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+#        with:
+#          java-version: '21'
+#          distribution: 'temurin'
+#          server-id: central
+#          server-username: MAVEN_CENTRAL_USERNAME
+#          server-password: MAVEN_CENTRAL_PASSWORD
+#          # to prevent "no default secret key: No secret key"
+#          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+#          gpg-passphrase: GPG_PASSPHRASE
 
       - name: Set version (from release tag)
         run: mvn versions:set -DnewVersion=${{ github.event.release.tag_name }}
 
-      - name: Publish to repo
-        run: mvn --batch-mode deploy -DskipTests
-        env:
-          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Monitor Snyk for vulnerabilities in code 📦
-        uses: snyk/actions/maven-3-jdk-21@12140f4059e244892ae643824a95459a102120dd # master
-        env:
-          JAVA_HOME: '' # Snyk action sets JAVA_HOME to a path that is not compatible with the setup-java action, so we need to reset it here
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          SNYK_API: https://api.eu.snyk.io
-          SNYK_ORG: ${{ secrets.SNYK_ORG }}
-        with:
-          # report only vulnerabilities with level high or critical, as we want to avoid noise in the PR checks
-          command: monitor
-          args: --maven-aggregate-project --severity-threshold=high --project-tags:app-name=swiyu-issuer,version=${{ env.IMAGE_VERSION_TAG  }}
+# Disable publishing for testing
+#      - name: Publish to repo
+#        run: mvn --batch-mode deploy -DskipTests
+#        env:
+#          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+#          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+#          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+#
+#      - name: Monitor Snyk for vulnerabilities in code 📦
+#        uses: snyk/actions/maven-3-jdk-21@12140f4059e244892ae643824a95459a102120dd # master
+#        env:
+#          JAVA_HOME: '' # Snyk action sets JAVA_HOME to a path that is not compatible with the setup-java action, so we need to reset it here
+#          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+#          SNYK_API: https://api.eu.snyk.io
+#          SNYK_ORG: ${{ secrets.SNYK_ORG }}
+#        with:
+#          # report only vulnerabilities with level high or critical, as we want to avoid noise in the PR checks
+#          command: monitor
+#          args: --maven-aggregate-project --severity-threshold=high --project-tags:app-name=swiyu-issuer,version=${{ env.IMAGE_VERSION_TAG  }}
